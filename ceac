@@ -7,7 +7,6 @@ install.packages("dplyr")
 
 library(Rcrawler)
 library(stringr)
-library(bigrquery)
 library(dplyr)
 
 # CEAC.
