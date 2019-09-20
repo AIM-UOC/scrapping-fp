@@ -1,0 +1,62 @@
+setwd("C:/Users/fponsal/Desktop")
+
+install.packages("Rcrawler")
+install.packages("stringr")
+install.packages("bigrquery")
+install.packages("dplyr")
+
+library(Rcrawler)
+library(stringr)
+library(bigrquery)
+library(dplyr)
+
+# CEAC.
+
+inicio_crawling <- Sys.time()
+
+Rcrawler("https://www.ceac.es/cursos", MaxDepth = 2, saveOnDisk=FALSE) #Capturamos info FP
+ceac <- INDEX
+
+# Obtenemos Nombres.
+
+ceac$title <- ""
+ceac$title[b]
+b <- 0
+
+for(x in ceac$Url){
+  b <- b+1
+  ceac$title[b] <- ContentScraper(x, XpathPatterns = c('//*[@id="landing"]/div[1]/div/div[1]/div/h1/div'))
+}
+
+ceac$title <- unlist(ceac$title)
+
+ceac2 <- subset(ceac, is.na(ceac$title)==FALSE)
+ceac2 <- distinct(ceac2,title, .keep_all= TRUE)
+
+ceac2$horas <- ""
+
+b=0
+for(x in ceac2$Url){
+  b <- b+1
+  ceac2$horas[b] <- ContentScraper(x, XpathPatterns = c('//*[@id="landing"]/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div/div/div/div[2]/p'))
+}
+
+ceac2$horas <- unlist(ceac2$horas)
+
+ceac2$practicas <- ""
+
+b=0
+for(x in ceac2$Url){
+  b <- b+1
+  ceac2$practicas[b] <- ContentScraper(x, XpathPatterns = c('//*[@id="landing"]/div[1]/div/div[1]/div/div[3]/div/div/div[3]/div/div/div/div[2]/p'))
+}
+
+ceac2$practicas <- unlist(ceac2$practicas)
+
+ceac2$practicas <- stringr::str_replace(ceac2$practicas, "\n  ","")
+ceac2$practicas <- stringr::str_replace(ceac2$practicas, "\n","")
+
+ceac2$horas <- stringr::str_replace(ceac2$horas, "\n  ","")
+ceac2$horas <- stringr::str_replace(ceac2$horas, "\n","")
+
+ceac2$practicas <- ifelse(ceac2$practicas = "Prácticas Profesionales", "-", "Sí")
